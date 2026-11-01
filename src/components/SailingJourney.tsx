@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef } from 'react'
+import { lazy, Suspense, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
@@ -9,6 +9,7 @@ import { clamp01, scrollToLength, waypointLengths, type Knot } from '../lib/rout
 import { useReducedMotion } from '../lib/useLayoutMode'
 import { voyage } from '../lib/voyage'
 import { ChapterNavigation } from './ChapterNavigation'
+import { ChartFallback, SceneBoundary, hasWebGL } from './SceneBoundary'
 
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
@@ -34,6 +35,7 @@ function stopLengths() {
  */
 export function SailingJourney() {
   const reduced = useReducedMotion()
+  const [webgl] = useState(hasWebGL)
   const rootRef = useRef<HTMLDivElement>(null)
   const goToRef = useRef<(i: number) => void>((i) => document.querySelector(`[data-stop="${i}"]`)?.scrollIntoView())
 
@@ -113,8 +115,8 @@ export function SailingJourney() {
         }
         voyage.focusW = isl ? near : 0
         voyage.shift = CHAPTERS[best].side === 'left' ? 1 : -near
-        // the boat-anatomy hint only shows in open water (chapters), not over content sections
-        root.dataset.port = best < CHAPTERS.length - 1 && near > 0.35 ? 'on' : 'off'
+        // the boat-anatomy hint shows at the island chapters only (boat is close and large enough to tap)
+        root.dataset.port = best >= 1 && best < CHAPTERS.length - 1 && near > 0.35 ? 'on' : 'off'
 
         // island labels light up as each island comes near
         document.querySelectorAll<HTMLElement>('.island-tag[data-island]').forEach((tag, k) => {
@@ -167,9 +169,15 @@ export function SailingJourney() {
   return (
     <div ref={rootRef} className="voyage" data-reduced={reduced}>
       <div className="voyage__canvas">
-        <Suspense fallback={<div className="voyage__fallback" />}>
-          <Scene animated={!reduced} />
-        </Suspense>
+        {webgl ? (
+          <SceneBoundary>
+            <Suspense fallback={<div className="voyage__fallback" />}>
+              <Scene animated={!reduced} />
+            </Suspense>
+          </SceneBoundary>
+        ) : (
+          <ChartFallback />
+        )}
       </div>
       <ChapterNavigation onSelect={(i) => goToRef.current(i)} />
     </div>

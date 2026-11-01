@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { HARBOURS, ISLANDS } from '../config/route'
-import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing'
 import { BoatInspector, PartProjector } from './BoatInspector'
 import { boatUI } from './boatParts'
 import { CameraRig } from './CameraRig'
@@ -55,16 +54,55 @@ function TagProjector({ tags, els }: { tags: Tag[]; els: React.RefObject<(HTMLDi
   return null
 }
 
-/** Stops rendering while the canvas is off-screen. */
-function OffscreenPause({ animated }: { animated: boolean }) {
-  const { gl, setFrameloop } = useThree()
+/**
+ * Render on demand: full frame rate while the visitor scrolls or moves the pointer (and while the
+ * camera settles), a calm 24 fps idle otherwise so the water keeps breathing. Pauses with the tab.
+ */
+function Ticker({ animated }: { animated: boolean }) {
+  const invalidate = useThree((s) => s.invalidate)
+  // hover / pin changes always need a fresh frame (also in the still, reduced-motion view)
+  useEffect(() => boatUI.subscribe(() => invalidate()), [invalidate])
   useEffect(() => {
     if (!animated) return
-    const io = new IntersectionObserver(([e]) => setFrameloop(e.isIntersecting ? 'always' : 'never'))
-    io.observe(gl.domElement)
-    return () => io.disconnect()
-  }, [gl, setFrameloop, animated])
+    let raf = 0
+    let last = 0
+    let lastInput = performance.now()
+    const bump = () => {
+      lastInput = performance.now()
+    }
+    const opts = { passive: true } as const
+    window.addEventListener('scroll', bump, opts)
+    window.addEventListener('pointermove', bump, opts)
+    window.addEventListener('touchmove', bump, opts)
+    window.addEventListener('resize', bump)
+    const loop = (t: number) => {
+      const busy = t - lastInput < 2500
+      if (busy || t - last >= 1000 / 24) {
+        invalidate()
+        last = t
+      }
+      raf = requestAnimationFrame(loop)
+    }
+    raf = requestAnimationFrame(loop)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', bump)
+      window.removeEventListener('pointermove', bump)
+      window.removeEventListener('touchmove', bump)
+      window.removeEventListener('resize', bump)
+    }
+  }, [animated, invalidate])
   return null
+}
+
+/** Device tier: phones and modest hardware get fewer pixels and a lighter sea mesh. */
+function deviceTier() {
+  const nav = navigator as Navigator & { deviceMemory?: number }
+  const weak = (nav.hardwareConcurrency || 8) <= 4 || (nav.deviceMemory || 8) <= 4
+  const small = window.matchMedia('(max-width: 860px), (pointer: coarse)').matches
+  if (weak) return { dpr: [1, 1] as [number, number], sea: [140, 100] as [number, number], mask: 256, motes: 80 }
+  if (small) return { dpr: [1, 1.5] as [number, number], sea: [200, 150] as [number, number], mask: 320, motes: 140 }
+  return { dpr: [1, 1.75] as [number, number], sea: [300, 220] as [number, number], mask: 384, motes: 220 }
 }
 
 export default function Scene({ animated }: { animated: boolean }) {
@@ -77,6 +115,7 @@ export default function Scene({ animated }: { animated: boolean }) {
   const fog: [number, number] = !animated ? [45, 120] : portrait ? [24, 72] : [18, 58]
   // the canvas is a fixed backdrop, always on screen
   const tags = useMemo(buildTags, [])
+  const tier = useMemo(deviceTier, [])
   const els = useRef<(HTMLDivElement | null)[]>([])
   const reticle = useRef<HTMLDivElement>(null)
   const tip = useRef<HTMLDivElement>(null)
@@ -84,30 +123,26 @@ export default function Scene({ animated }: { animated: boolean }) {
     <>
       <Canvas
         flat
-        dpr={[1, 1.75]}
-        frameloop={animated ? 'always' : 'demand'}
+        dpr={tier.dpr}
+        frameloop="demand"
         camera={{ fov: 38, near: 0.1, far: 220, position: [0, 12, 18] }}
-        gl={{ antialias: false, powerPreference: 'high-performance', stencil: false }}
+        gl={{ antialias: true, powerPreference: 'high-performance', stencil: false }}
         aria-hidden="true"
         onPointerMissed={() => boatUI.set({ pinned: null })}
       >
         <color attach="background" args={[COLORS.sky]} />
         <fog attach="fog" args={[COLORS.sky, fog[0], fog[1]]} />
-        <Sea fogNear={fog[0]} fogFar={fog[1]} />
+        <Sea fogNear={fog[0]} fogFar={fog[1]} segments={tier.sea} maskWidth={tier.mask} />
         <CompassRing />
-        <Islands />
+        <Islands animated={animated} />
         <Harbours />
         <Route />
         <Sailboat />
-        <Motes />
+        <Motes count={tier.motes} />
         <CameraRig animated={animated} />
         <TagProjector tags={tags} els={els} />
         <PartProjector reticle={reticle} tip={tip} />
-        <OffscreenPause animated={animated} />
-        <EffectComposer multisampling={4}>
-          <Bloom mipmapBlur intensity={0.45} luminanceThreshold={0.86} luminanceSmoothing={0.12} radius={0.6} />
-          <Vignette offset={0.35} darkness={0.32} />
-        </EffectComposer>
+        <Ticker animated={animated} />
       </Canvas>
       <BoatInspector reticle={reticle} tip={tip} />
       <div className="scene-tags" aria-hidden="true">

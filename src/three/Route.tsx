@@ -38,7 +38,7 @@ export function Route() {
   const wake = useMemo(() => new THREE.Color(COLORS.white), [])
   const glow = useMemo(() => new THREE.Color(COLORS.mist), [])
   const dim = useMemo(() => new THREE.Color(COLORS.mist), [])
-  const hot = useMemo(() => new THREE.Color(COLORS.white).multiplyScalar(1.2), [])
+  const hot = useMemo(() => new THREE.Color(COLORS.terracotta), [])
   const sea = useMemo(() => new THREE.Color(COLORS.seaShallow), [])
   const rings = useRef<(THREE.Mesh | null)[]>([])
   const last = useRef(-1)

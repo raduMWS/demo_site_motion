@@ -162,3 +162,20 @@ body { background: var(--bg); }
 @media (min-width: 861px) {
   body:has(.voyage[data-reduced='true']) .chapter--hero::before { inset: 0 32% 0 0; background: radial-gradient(ellipse at 32% 52%, rgba(246, 243, 236, 0.96) 0 38%, rgba(246, 243, 236, 0) 74%); }
 }
+
+/* ---- warm Mediterranean accent: terracotta, used sparingly ---- */
+.chapter__marker { background: var(--warm); }
+.chapter__dash, .section__kicker::before { background: var(--warm); }
+.voyage-rail a[aria-current='step'] .voyage-rail__diamond { background: var(--warm); border-color: var(--warm); box-shadow: 0 0 0 3px rgba(181, 83, 47, 0.18); }
+.voyage-rail__label [data-rail-label] { color: var(--warm); }
+.chapter--editorial .chapter__point-n { color: var(--warm); }
+.part-tip.is-pinned { border-color: var(--warm); }
+.part-tip.is-pinned .part-tip__head strong { color: var(--warm); }
+.link-arrow::after { color: var(--warm); }
+
+/* soft vignette (replaces the WebGL post-processing pass – free on the GPU) */
+.voyage__canvas::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 55%, rgba(11, 37, 69, 0) 58%, rgba(11, 37, 69, 0.16) 100%); }
+.scene-tags, .part-reticle, .part-tip { z-index: 1; }
+
+/* no-WebGL / error fallback: a still of the chart */
+.voyage__fallback--image { background: var(--sky) url('/chart-fallback.jpg') center / cover no-repeat; }

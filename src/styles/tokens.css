@@ -8,6 +8,8 @@
   --white: #ffffff;
   --offwhite: #f6f3ec;
   --mist: #dce9f6;
+  --terracotta: #b5532f; /* 4.9:1 on white – safe for small text */
+  --sun: #f2b33d;        /* graphics only */
 
   /* roles */
   --bg: var(--offwhite);
@@ -17,9 +19,10 @@
   --ink-strong: var(--navy);
   --ink-soft: rgba(11, 37, 69, 0.74);
   --accent: var(--blue);
-  --accent-soft: #5b84b8;
+  --accent-soft: #3d6797; /* 5.6:1 on white */
   --cta: var(--blue);
   --cta-hover: var(--navy);
+  --warm: var(--terracotta);
   --line: rgba(11, 37, 69, 0.12);
   --line-strong: rgba(31, 95, 175, 0.3);
   --error: #b3261e;

@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "check:route": "tsx scripts/check-route.ts"
+    "check:route": "tsx scripts/check-route.ts",
+    "check:safari": "node scripts/webkit-check.mjs",
+    "check:a11y": "node scripts/a11y-check.mjs"
   },
   "dependencies": {
     "@fontsource-variable/commissioner": "^5.3.0",
@@ -17,9 +19,7 @@
     "@gsap/react": "^2.1.2",
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
-    "@react-three/postprocessing": "^3.2.2",
     "gsap": "^3.15.0",
-    "postprocessing": "^6.39.5",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "three": "^0.187.0"
@@ -30,7 +30,9 @@
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "axe-core": "^4.14.0",
     "oxlint": "^1.89.0",
+    "playwright": "^1.64.1",
     "tsx": "^4.23.15",
     "typescript": "~7.0.2",
     "vite": "^8.3.5"

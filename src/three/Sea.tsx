@@ -1,8 +1,8 @@
-import { useMemo, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { sampleRoute, voyage } from '../lib/voyage'
-import { bakeSeaMask } from './seaMask'
+import { bakeSeaMask, emptySeaMask } from './seaMask'
 import { COLORS, SEA_H, SEA_W, toWorld } from './world'
 
 const vertex = /* glsl */ `
@@ -37,6 +37,7 @@ uniform vec3 uBoat;      // x, z, strength
 uniform vec2 uBoatDir;
 uniform vec3 uDeep, uShallow, uWhite, uMist, uFog, uSun;
 uniform float uFogNear, uFogFar;
+uniform float uMaskIn;
 varying vec3 vWorld;
 varying vec3 vN;
 
@@ -46,7 +47,7 @@ void main() {
   vec2 uv = (vWorld.xz + uSea * 0.5) / uSea;
   vec2 e = smoothstep(vec2(0.0), vec2(0.04), uv) * (1.0 - smoothstep(vec2(0.96), vec2(1.0), uv));
   float inside = e.x * e.y;
-  vec4 m = texture2D(uMask, clamp(uv, 0.0, 1.0)) * inside;
+  vec4 m = texture2D(uMask, clamp(uv, 0.0, 1.0)) * inside * uMaskIn;
   float shore = m.r;
   float depth = m.g;
 
@@ -71,7 +72,9 @@ void main() {
 
   // sunlight: soft diffuse, sparkling glints, sky reflection at grazing angles
   col *= 0.9 + 0.14 * clamp(dot(n, L), 0.0, 1.0);
-  float spec = pow(max(dot(reflect(-L, n), V), 0.0), 180.0);
+  // glints only up close: far away the wave detail is sub-pixel and the highlight smears
+  float camDist = length(cameraPosition - vWorld);
+  float spec = pow(max(dot(reflect(-L, n), V), 0.0), 180.0) * (1.0 - smoothstep(14.0, 30.0, camDist));
   col += vec3(1.0) * spec * 0.7;
   float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0);
   col = mix(col, uFog, fres * 0.45);
@@ -94,20 +97,21 @@ void main() {
   float bow = (1.0 - smoothstep(0.2, 0.7, dBoat)) * 0.35;
   col = mix(col, uWhite, clamp((wake * 0.55 + trail * 0.5 + bow) * uBoat.z, 0.0, 1.0));
 
-  float dist = length(cameraPosition - vWorld);
-  col = mix(col, uFog, smoothstep(uFogNear, uFogFar, dist));
+  col = mix(col, uFog, smoothstep(uFogNear, uFogFar, camDist));
 
   gl_FragColor = vec4(col, 1.0);
   #include <colorspace_fragment>
 }
 `
 
-export function Sea({ fogNear, fogFar }: { fogNear: number; fogFar: number }) {
-  const mat = useRef<THREE.ShaderMaterial>(null)
+export function Sea({ fogNear, fogFar, segments = [300, 220], maskWidth = 384 }: { fogNear: number; fogFar: number; segments?: [number, number]; maskWidth?: number }) {
+  const invalidate = useThree((s) => s.invalidate)
+  const ready = useRef(false)
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uMask: { value: bakeSeaMask() },
+      uMask: { value: emptySeaMask() as THREE.Texture },
+      uMaskIn: { value: 0 },
       uSea: { value: new THREE.Vector2(SEA_W, SEA_H) },
       uBoat: { value: new THREE.Vector3(0, 0, 1) },
       uBoatDir: { value: new THREE.Vector2(1, 0) },
@@ -123,9 +127,31 @@ export function Sea({ fogNear, fogFar }: { fogNear: number; fogFar: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   )
+  // One material that owns `uniforms` directly. (Passing uniforms as a JSX prop let the
+  // renderer hold a copy, so later updates – like the worker-baked mask – never reached the GPU.)
+  const material = useMemo(() => new THREE.ShaderMaterial({ vertexShader: vertex, fragmentShader: fragment, uniforms }), [uniforms])
+  useEffect(() => () => material.dispose(), [material])
+
+  // coastline distance field is baked off the main thread, then swapped in
+  useEffect(
+    () =>
+      bakeSeaMask(maskWidth, (tex) => {
+        const old = uniforms.uMask.value
+        uniforms.uMask.value = tex
+        old.dispose()
+        ready.current = true
+        invalidate()
+      }),
+    [uniforms, maskWidth, invalidate],
+  )
 
   useFrame((state, dt) => {
     uniforms.uTime.value += Math.min(dt, 0.05)
+    // contours fade in once the worker delivers them (instantly in the still overview)
+    if (ready.current && uniforms.uMaskIn.value < 1) {
+      uniforms.uMaskIn.value = state.frameloop === 'demand' && !voyage.animated ? 1 : Math.min(1, uniforms.uMaskIn.value + dt * 2)
+      if (uniforms.uMaskIn.value < 1) invalidate()
+    }
     const fog = state.scene.fog as THREE.Fog | null
     if (fog) {
       uniforms.uFogNear.value = fog.near
@@ -138,9 +164,8 @@ export function Sea({ fogNear, fogFar }: { fogNear: number; fogFar: number }) {
   })
 
   return (
-    <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
-      <planeGeometry args={[150, 110, 300, 220]} />
-      <shaderMaterial ref={mat} vertexShader={vertex} fragmentShader={fragment} uniforms={uniforms} />
+    <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]} material={material}>
+      <planeGeometry args={[150, 110, segments[0], segments[1]]} />
     </mesh>
   )
 }

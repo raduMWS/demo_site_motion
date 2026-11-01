@@ -19,7 +19,14 @@ export const COLORS = {
   mist: '#CFE2F6',
   seaDeep: '#0A3C77',
   seaShallow: '#4E9EE0',
-  lamp: '#FFF1CC',
+  lamp: '#FFC857',
+  terracotta: '#C8643B',
+  terracottaPale: '#F3D8CB',
+  /* vegetation */
+  cypress: '#2F6E4F',
+  cypressEdge: '#1D4834',
+  olive: '#8DB07A',
+  oliveEdge: '#55784A',
   portRed: '#E0483C',
   stbdGreen: '#2BB673',
 } as const

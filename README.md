@@ -2,7 +2,7 @@
 
 React + TypeScript + Vite · GSAP ScrollTrigger (+ `@gsap/react`) · three.js via `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing` (bloom + vignette) · CSS. No smooth-scroll library — ordinary browser scrolling.
 
-**Art direction:** night navigation on a holographic chart table — dark translucent forms with glowing edges, a coral comet-trail for the course, a compass-bearing ring framing the archipelago. Type: Sora (display), Commissioner (body), IBM Plex Mono (labels); all support Romanian diacritics.
+**Art direction:** a sunlit Aegean chart table — whitewashed line-art islands with Cycladic blue roofs, a white yacht and wake on deep-to-turquoise blue water, white depth contours, a compass-bearing ring framing the archipelago. Palette: white, off-white, Aegean blue, navy, with a sparing warm accent — terracotta (markers, active states, a few roofs, hover/pin highlight) and sun-yellow (lights only) (`src/styles/tokens.css` for the UI, `COLORS` in `src/three/world.ts` for the 3D scene). Type: Sora (display), Commissioner (body), IBM Plex Mono (labels); all support Romanian diacritics.
 
 ## Run
 ```bash
@@ -10,7 +10,15 @@ npm install
 npm run dev          # http://localhost:5173
 npm run build        # type-check + production build
 npm run check:route  # verifies the boat route never crosses island land
+
+# with `npm run preview` running in another terminal:
+npm run check:safari # WebKit smoke test as iPhone 14 + desktop Safari (screenshots + errors)
+npm run check:a11y   # axe-core WCAG 2.1 AA audit, desktop + iPhone
 ```
+
+> **Note:** builds always run in production mode (`vite.config.ts`). A shell that exports
+> `NODE_ENV=test` (as this machine's `~/.zshrc` does) would otherwise bundle React's
+> development runtime and make the site much heavier.
 
 ## Where to edit
 | What | File |
@@ -22,7 +30,7 @@ npm run check:route  # verifies the boat route never crosses island land
 | **Timing**: pinned length, dwell per chapter, drift, fade, easing, scrub | `src/config/timeline.ts` |
 | Colours & fonts | `src/styles/tokens.css` |
 | 3D scene: sea shader, islands, boat, camera, bloom | `src/three/` (`Sea.tsx`, `Islands.tsx`, `Sailboat.tsx`, `Route.tsx`, `ChartTable.tsx`, `CameraRig.tsx`, `Scene.tsx`, `Holo.tsx`) |
-| Night palette used in 3D | `COLORS` in `src/three/world.ts` (mirrors `src/styles/tokens.css`) |
+| 3D palette | `COLORS` in `src/three/world.ts` (mirrors `src/styles/tokens.css`) |
 | Stage / panels / mobile layout | `src/styles/journey.css` |
 
 ## How the voyage works
@@ -46,3 +54,14 @@ Hovering the boat shows a targeting reticle + tooltip; clicking pins a short exp
 
 ## Reduced motion
 `prefers-reduced-motion` → still 3D overview of the whole chart (rendered on demand), no travel; all content in normal flow.
+
+## Performance notes
+- **No main-thread freeze at load.** The route is sampled from a precomputed arc-length table (`buildRouteLUT` in `src/lib/routeMath.ts`) instead of `SVGPathElement.getPointAtLength`, and the sea's coastline distance field is baked in a Web Worker (`src/three/seaMask.worker.ts`). Longest startup task: ~90 ms (was ~660 ms).
+- **Render on demand.** Full frame rate only while scrolling / pointing (+2.5 s to let the camera settle); a calm 24 fps idle otherwise (`Ticker` in `src/three/Scene.tsx`).
+- **Device tiers.** Phones and modest hardware get lower pixel ratio, a lighter sea mesh and fewer motes (`deviceTier`).
+- **No post-processing.** The vignette is CSS; bloom was removed.
+- **Materials own their uniforms.** Shader materials are created in `useMemo` and passed via `material={…}` so per-frame updates always reach the GPU.
+- **Fallback.** No WebGL (or any 3D error) → static chart image (`public/chart-fallback.jpg`, regenerate from the reduced-motion view if the scene changes).
+
+## Sharing the demo
+`index.html` has Open Graph / Twitter tags with `public/og-image.jpg` (1200×630). Once the demo is hosted, change `og:image` / `twitter:image` to the absolute URL so WhatsApp / LinkedIn show the preview.

@@ -101,7 +101,7 @@ export function Sailboat({ scale = 1 }: { scale?: number }) {
   // which part is under the cursor / pinned – re-renders only when that changes
   useSyncExternalStore(boatUI.subscribe, boatUI.snapshot)
   const act = boatUI.hover ?? boatUI.pinned
-  const hi = (ids: string[], base: string) => (act && ids.includes(act) ? COLORS.aegean : base)
+  const hi = (ids: string[], base: string) => (act && ids.includes(act) ? COLORS.terracotta : base)
   const hitMat = useMemo(() => new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }), [])
 
   const over = (id: string) => (e: ThreeEvent<PointerEvent>) => {
@@ -134,10 +134,10 @@ export function Sailboat({ scale = 1 }: { scale?: number }) {
         <Beacon position={[0.45, 0.26, -0.24]} color={COLORS.portRed} size={act === 'babord' ? 0.045 : 0.025} intensity={2.5} />
         {/* sails eased out to starboard */}
         <group rotation-y={-0.22}>
-          <Holo geometry={geo.main} edge={hi(['randa'], COLORS.navy)} edgeOpacity={0.95} fill={act === 'randa' ? COLORS.mist : COLORS.white} fillOpacity={0.85} threshold={12} />
+          <Holo geometry={geo.main} edge={hi(['randa'], COLORS.navy)} edgeOpacity={0.95} fill={act === 'randa' ? COLORS.terracottaPale : COLORS.white} fillOpacity={0.85} threshold={12} />
         </group>
         <group rotation-y={-0.12}>
-          <Holo geometry={geo.jib} edge={hi(['foc'], COLORS.navy)} edgeOpacity={0.85} fill={act === 'foc' ? COLORS.mist : COLORS.white} fillOpacity={0.8} threshold={12} />
+          <Holo geometry={geo.jib} edge={hi(['foc'], COLORS.navy)} edgeOpacity={0.85} fill={act === 'foc' ? COLORS.terracottaPale : COLORS.white} fillOpacity={0.8} threshold={12} />
         </group>
         {/* invisible hit volumes for the anatomy hotspots */}
         {BOAT_PARTS.map((p) => (

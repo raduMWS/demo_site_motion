@@ -100,3 +100,6 @@
 .field input[type='text'], .field input[type='email'], .field input[type='tel'], .field select, .field textarea { background: var(--white); border-color: rgba(11, 37, 69, 0.28); }
 .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.22); }
 .course__num { color: var(--aegean); }
+.course__num { color: var(--warm); }
+.course__link::after, .exp-list a::after { color: var(--warm); }
+.section__kicker::before { background: var(--warm); }

@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { COLORS } from './world'
@@ -49,7 +49,7 @@ export function CompassRing() {
       {/* north marker */}
       <mesh position={[0, 0.01, -(R + 1.9)]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[0.45, 3]} />
-        <meshBasicMaterial color={COLORS.white} />
+        <meshBasicMaterial color={COLORS.terracotta} />
       </mesh>
     </group>
   )
@@ -57,7 +57,6 @@ export function CompassRing() {
 
 /** Sparse drifting motes of light above the water. */
 export function Motes({ count = 220 }: { count?: number }) {
-  const mat = useRef<THREE.ShaderMaterial>(null)
   const geo = useMemo(() => {
     const pos = new Float32Array(count * 3)
     const seed = new Float32Array(count)
@@ -77,18 +76,15 @@ export function Motes({ count = 220 }: { count?: number }) {
     return g
   }, [count])
   const uniforms = useMemo(() => ({ uTime: { value: 0 }, uColor: { value: new THREE.Color(COLORS.white) } }), [])
-  useFrame((_, dt) => {
-    uniforms.uTime.value += Math.min(dt, 0.05)
-  })
-  return (
-    <points geometry={geo}>
-      <shaderMaterial
-        ref={mat}
-        transparent
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        uniforms={uniforms}
-        vertexShader={`
+  // material owns its uniforms directly so per-frame updates reach the GPU
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        uniforms,
+        vertexShader: `
           uniform float uTime; attribute float aSeed; varying float vA;
           void main(){
             vec3 p = position;
@@ -98,15 +94,22 @@ export function Motes({ count = 220 }: { count?: number }) {
             gl_PointSize = (2.2 + 1.6 * fract(aSeed)) * (14.0 / -mv.z);
             vA = 0.35 + 0.65 * (0.5 + 0.5 * sin(uTime * 0.9 + aSeed * 3.0));
             gl_Position = projectionMatrix * mv;
-          }`}
-        fragmentShader={`
+          }`,
+        fragmentShader: `
           uniform vec3 uColor; varying float vA;
           void main(){
             float d = length(gl_PointCoord - 0.5);
             float a = smoothstep(0.5, 0.0, d) * vA;
             gl_FragColor = vec4(uColor * a, a);
-          }`}
-      />
-    </points>
+          }`,
+      }),
+    [uniforms],
+  )
+  useEffect(() => () => material.dispose(), [material])
+  useFrame((_, dt) => {
+    uniforms.uTime.value += Math.min(dt, 0.05)
+  })
+  return (
+    <points geometry={geo} material={material} />
   )
 }
