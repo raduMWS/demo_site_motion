@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useGSAP } from '@gsap/react'
@@ -8,6 +8,7 @@ import { TIMELINE } from '../config/timeline'
 import { clamp01, scrollToLength, waypointLengths, type Knot } from '../lib/routeMath'
 import { useReducedMotion } from '../lib/useLayoutMode'
 import { voyage } from '../lib/voyage'
+import { loaderFinish } from '../lib/loader'
 import { ChapterNavigation } from './ChapterNavigation'
 import { ChartFallback, SceneBoundary, hasWebGL } from './SceneBoundary'
 
@@ -36,6 +37,10 @@ function stopLengths() {
 export function SailingJourney() {
   const reduced = useReducedMotion()
   const [webgl] = useState(hasWebGL)
+  // no 3D on this device: nothing else to wait for
+  useEffect(() => {
+    if (!webgl) loaderFinish()
+  }, [webgl])
   const rootRef = useRef<HTMLDivElement>(null)
   const goToRef = useRef<(i: number) => void>((i) => document.querySelector(`[data-stop="${i}"]`)?.scrollIntoView())
 

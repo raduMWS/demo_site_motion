@@ -5,6 +5,7 @@ import { HARBOURS, ISLANDS } from '../config/route'
 import { BoatInspector, PartProjector } from './BoatInspector'
 import { boatUI } from './boatParts'
 import { CameraRig } from './CameraRig'
+import { loaderStep } from '../lib/loader'
 import { CompassRing, Motes } from './ChartTable'
 import { Harbours, ISLAND_TOP, Islands } from './Islands'
 import { Route } from './Route'
@@ -95,6 +96,17 @@ function Ticker({ animated }: { animated: boolean }) {
   return null
 }
 
+/** Tells the loader once the first frame has been drawn. */
+function FirstFrame() {
+  const sent = useRef(false)
+  useFrame(() => {
+    if (sent.current) return
+    sent.current = true
+    requestAnimationFrame(() => loaderStep('frame'))
+  })
+  return null
+}
+
 /** Device tier: phones and modest hardware get fewer pixels and a lighter sea mesh. */
 function deviceTier() {
   const nav = navigator as Navigator & { deviceMemory?: number }
@@ -143,6 +155,7 @@ export default function Scene({ animated }: { animated: boolean }) {
         <TagProjector tags={tags} els={els} />
         <PartProjector reticle={reticle} tip={tip} />
         <Ticker animated={animated} />
+        <FirstFrame />
       </Canvas>
       <BoatInspector reticle={reticle} tip={tip} />
       <div className="scene-tags" aria-hidden="true">

@@ -3,6 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { sampleRoute, voyage } from '../lib/voyage'
 import { bakeSeaMask, emptySeaMask } from './seaMask'
+import { loaderStep } from '../lib/loader'
 import { COLORS, SEA_H, SEA_W, toWorld } from './world'
 
 const vertex = /* glsl */ `
@@ -140,6 +141,7 @@ export function Sea({ fogNear, fogFar, segments = [300, 220], maskWidth = 384 }:
         uniforms.uMask.value = tex
         old.dispose()
         ready.current = true
+        loaderStep('chart')
         invalidate()
       }),
     [uniforms, maskWidth, invalidate],
