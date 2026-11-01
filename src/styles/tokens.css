@@ -1,0 +1,33 @@
+/* PALETTE + TYPE TOKENS – Mediterranean: whitewash, Aegean blues, navy. Edit colours here. */
+:root {
+  /* palette */
+  --navy: #0b2545;
+  --blue: #1f5faf;
+  --aegean: #2a7de1;
+  --sky: #eaf2fa;
+  --white: #ffffff;
+  --offwhite: #f6f3ec;
+  --mist: #dce9f6;
+
+  /* roles */
+  --bg: var(--offwhite);
+  --surface: var(--white);
+  --panel: rgba(255, 255, 255, 0.95);
+  --ink: var(--navy);
+  --ink-strong: var(--navy);
+  --ink-soft: rgba(11, 37, 69, 0.74);
+  --accent: var(--blue);
+  --accent-soft: #5b84b8;
+  --cta: var(--blue);
+  --cta-hover: var(--navy);
+  --line: rgba(11, 37, 69, 0.12);
+  --line-strong: rgba(31, 95, 175, 0.3);
+  --error: #b3261e;
+
+  --font-display: 'Sora Variable', 'Sora', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Commissioner Variable', 'Commissioner', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --header-h: 64px;
+  --radius: 14px;
+}

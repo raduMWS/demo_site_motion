@@ -1,0 +1,164 @@
+/* ============ THE VOYAGE: a fixed 3D backdrop behind the whole page ============ */
+.voyage__canvas { position: fixed; inset: 0; z-index: 0; background: var(--bg); }
+.voyage__canvas canvas { display: block; }
+.voyage__fallback { position: absolute; inset: 0; background: linear-gradient(180deg, var(--sky) 0 34%, #4e9ee0 34%, #0a3c77 100%); }
+.page, .site-footer { position: relative; z-index: 1; }
+body { background: var(--bg); }
+
+/* labels projected from the 3D scene */
+.scene-tags { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.scene-tags .island-tag { position: absolute; left: 0; top: 0; will-change: transform; }
+.island-tag { display: grid; justify-items: center; gap: 3px; white-space: nowrap; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.14em; transition: opacity .3s; }
+.island-tag__name { font-size: 10.5px; font-weight: 500; color: var(--accent); background: rgba(246, 243, 236, 0.78); padding: 5px 9px 4px; border: 1px solid var(--line-strong); border-radius: 4px; }
+.island-tag__coord { font-size: 9.5px; color: rgba(31, 95, 175, 0.6); }
+.island-tag > *, .island-tag::after { opacity: var(--near, 1); }
+.voyage[data-reduced='true'] .island-tag > *, .voyage[data-reduced='true'] .island-tag::after { opacity: 1; }
+.island-tag::after { content: ''; width: 1px; height: 30px; background: linear-gradient(var(--accent), transparent); opacity: 0.7; }
+
+/* ============ CHAPTERS: open water with one card each ============ */
+.chapter { position: relative; min-height: 100vh; min-height: 100svh; display: flex; font-size: clamp(0.88rem, 0.95vw, 1rem); scroll-margin-top: 0; }
+.chapter--right { justify-content: flex-end; align-items: flex-end; padding: calc(var(--header-h) + 2rem) clamp(1.5rem, 6.5%, 7rem) clamp(2rem, 9vh, 5.5rem); }
+.chapter--right .chapter__panel { width: min(29rem, 100%); }
+.chapter--hero { align-items: center; padding: var(--header-h) clamp(1.25rem, 7.5%, 8.5rem) 0 clamp(4.5rem, 7.5%, 8.5rem); }
+.chapter--hero .chapter__panel { width: min(52rem, 60%); }
+
+/* chapter cards */
+.chapter__panel { position: relative; background: var(--panel); border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 1.5em 1.6em 1.4em; box-shadow: 0 30px 80px -30px rgba(11, 37, 69, 0.22), inset 0 1px 0 rgba(31, 95, 175, 0.08); }
+.chapter__meta { display: flex; flex-wrap: wrap; row-gap: 0.4em; justify-content: space-between; align-items: center; gap: 1em; margin-bottom: 1.1em; font-size: 0.7em; color: var(--accent); }
+.chapter__count { display: inline-flex; align-items: center; gap: 0.6em; color: var(--accent-soft); white-space: nowrap; }
+.chapter__count strong { color: var(--ink-strong); font-weight: 600; }
+.chapter__marker { width: 7px; height: 7px; transform: rotate(45deg); background: var(--cta); box-shadow: 0 0 10px var(--cta); flex: none; }
+.chapter__title { font-size: 1.95em; margin-bottom: 0.45em; }
+.chapter__body { color: var(--ink-soft); line-height: 1.6; font-size: 1em; }
+.chapter__body + .chapter__body { margin-top: 0.7em; }
+.chapter__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8em; margin-top: 1.1em; }
+.chapter__points { margin-top: 1em; border-top: 1px solid var(--line); }
+.chapter__points li { display: grid; grid-template-columns: 2.3em 1fr; gap: 0.4em; padding: 0.6em 0; border-bottom: 1px solid var(--line); font-size: 0.94em; line-height: 1.4; color: var(--ink-soft); }
+.chapter__points strong { color: var(--ink-strong); font-weight: 600; }
+.chapter__point-n { padding-top: 0.15em; color: var(--accent-soft); }
+.chapter__point-sep { color: var(--accent-soft); }
+
+/* hero: type directly on the night chart */
+.chapter--hero .chapter__panel { background: none; border: 0; box-shadow: none; padding: 0; border-radius: 0; }
+.chapter--hero::before { content: ''; position: absolute; inset: 0 30% 0 0; background: radial-gradient(ellipse at 20% 50%, rgba(246, 243, 236, 0.9) 0 28%, rgba(246, 243, 236, 0) 70%); pointer-events: none; }
+.chapter__kicker { display: flex; align-items: center; gap: 1em; margin-bottom: 1.6em; font-size: 0.78em; }
+.chapter__dash { width: 2.2em; height: 1px; background: var(--accent); flex: none; }
+.chapter--hero .chapter__title { font-size: clamp(2.5rem, 5.4vw, 5.4rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.02; max-width: 12ch; margin-bottom: 0.45em; }
+.chapter--hero .chapter__body { max-width: 31em; font-size: 1.22em; line-height: 1.55; color: var(--ink-soft); }
+.chapter--hero .chapter__actions { margin-top: 2em; gap: 1em; }
+.scroll-cue { position: absolute; left: clamp(4.5rem, 7.5%, 8.5rem); bottom: 5vh; display: flex; align-items: center; gap: 0.9rem; margin: 0; font-size: 0.68rem; color: var(--ink-soft); }
+.scroll-cue i { display: block; width: 46px; height: 1px; background: linear-gradient(90deg, var(--accent), transparent); }
+
+/* editorial (La cârmă) */
+.chapter--editorial .chapter__points { border-top: 0; }
+.chapter--editorial .chapter__points li { grid-template-columns: 2.4em 1fr; align-items: baseline; }
+.chapter--editorial .chapter__point-n { font-family: var(--font-display); font-size: 1.35em; font-weight: 300; color: var(--cta); letter-spacing: -0.02em; text-transform: none; padding: 0; }
+.chapter--editorial .chapter__points strong { display: block; font-family: var(--font-display); font-weight: 600; }
+.chapter--editorial .chapter__point-sep { display: none; }
+
+/* crew placeholder */
+.crew-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6em; margin-top: 1.1em; }
+.crew-slot { display: flex; flex-direction: column; align-items: center; gap: 0.3em; padding: 0.8em 0.4em; border: 1px dashed var(--line-strong); border-radius: 10px; text-align: center; }
+.crew-slot svg { width: 2.3em; height: auto; fill: none; stroke: var(--accent); stroke-width: 1.4; opacity: 0.75; }
+.crew-slot .chart-label { font-size: 0.62em; }
+.crew-slot__hint { font-size: 0.7em; line-height: 1.25; color: var(--ink-soft); }
+
+/* ============ VOYAGE RAIL (left progress, fixed) ============ */
+.voyage-rail { position: fixed; left: clamp(0.9rem, 2.2vw, 2.25rem); top: 50%; transform: translateY(-38%); z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 1.2rem; }
+.voyage-rail ol { display: flex; flex-direction: column; }
+.voyage-rail a { display: grid; place-items: center; width: 32px; height: 26px; }
+.voyage-rail__diamond { width: 8px; height: 8px; transform: rotate(45deg); border: 1px solid var(--accent-soft); background: var(--bg); transition: background-color .25s, border-color .25s, box-shadow .25s; }
+.voyage-rail a:hover .voyage-rail__diamond { border-color: var(--accent); }
+.voyage-rail a[aria-current='step'] .voyage-rail__diamond { background: var(--cta); border-color: var(--cta); box-shadow: 0 0 12px var(--cta); }
+.voyage[data-chapter='1'] .voyage-rail li:nth-child(-n + 1) .voyage-rail__diamond,
+.voyage[data-chapter='2'] .voyage-rail li:nth-child(-n + 2) .voyage-rail__diamond,
+.voyage[data-chapter='3'] .voyage-rail li:nth-child(-n + 3) .voyage-rail__diamond,
+.voyage[data-chapter='4'] .voyage-rail li:nth-child(-n + 4) .voyage-rail__diamond,
+.voyage[data-chapter='5'] .voyage-rail li:nth-child(-n + 5) .voyage-rail__diamond { background: rgba(31, 95, 175, 0.55); border-color: var(--cta); }
+.voyage-rail__label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.64rem; color: var(--ink-soft); white-space: nowrap; }
+.voyage-rail__label [data-rail-label] { color: var(--cta); }
+@media (pointer: coarse) { .voyage-rail a { width: 40px; height: 40px; } }
+
+/* ============ NARROW SCREENS ============ */
+@media (max-width: 860px) {
+  .voyage-rail { display: none; }
+  .chapter { min-height: 92svh; }
+  .chapter--hero { align-items: flex-end; padding: calc(var(--header-h) + 1rem) 1.1rem 4.5rem; }
+  .chapter--hero .chapter__panel { width: 100%; }
+  .chapter--hero::before { inset: 20% 0 0 0; background: linear-gradient(180deg, rgba(246, 243, 236, 0) 0, rgba(246, 243, 236, 0.92) 45%); }
+  .chapter--hero .chapter__title { font-size: clamp(2.3rem, 10.5vw, 3.4rem); }
+  .chapter--right { padding: calc(var(--header-h) + 1rem) 1rem 1.5rem; }
+  .chapter--right .chapter__panel { width: 100%; }
+  .chapter__title { font-size: clamp(1.6rem, 7vw, 2.1rem); }
+  .scroll-cue { left: 1.1rem; bottom: 1.4rem; }
+}
+
+/* ============ BOAT ANATOMY HOTSPOTS ============ */
+/* let the empty water between cards reach the 3D scene */
+.page { pointer-events: none; }
+.page .chapter__panel, .page .section, .page .scroll-cue { pointer-events: auto; }
+.chapter--hero .chapter__panel { pointer-events: auto; }
+
+.part-reticle { position: absolute; left: 0; top: 0; width: 40px; height: 40px; pointer-events: none; opacity: 0; transition: opacity .18s; will-change: transform; }
+.part-reticle i { position: absolute; width: 12px; height: 12px; border: 0 solid var(--accent); filter: drop-shadow(0 0 4px rgba(31, 95, 175, 0.8)); }
+.part-reticle i:nth-child(1) { left: 0; top: 0; border-width: 1.5px 0 0 1.5px; }
+.part-reticle i:nth-child(2) { right: 0; top: 0; border-width: 1.5px 1.5px 0 0; }
+.part-reticle i:nth-child(3) { left: 0; bottom: 0; border-width: 0 0 1.5px 1.5px; }
+.part-reticle i:nth-child(4) { right: 0; bottom: 0; border-width: 0 1.5px 1.5px 0; }
+
+.part-tip { position: absolute; left: 0; top: 0; width: max-content; max-width: 280px; padding: 0.7rem 0.85rem 0.75rem; background: rgba(246, 243, 236, 0.92); border: 1px solid var(--line-strong); border-radius: 6px; pointer-events: none; opacity: 0; transition: opacity .18s; will-change: transform; font-family: var(--font-mono); }
+.part-tip__head { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 0.25rem; }
+.part-tip__head strong { font-size: 0.82rem; font-weight: 500; color: var(--accent); letter-spacing: 0.02em; }
+.part-tip__head span { font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent-soft); }
+.part-tip__line { font-size: 0.74rem; color: var(--ink-strong); }
+.part-tip__cta { margin-top: 0.4rem; font-size: 0.6rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
+.part-tip__detail { margin-top: 0.55rem; padding-top: 0.55rem; border-top: 1px solid var(--line); font-family: var(--font-body); font-size: 0.86rem; line-height: 1.5; color: var(--ink-soft); }
+.part-tip.is-pinned { border-color: rgba(31, 95, 175, 0.6); max-width: 320px; }
+.part-tip.is-pinned .part-tip__head strong { color: var(--cta); }
+
+.part-hint { position: absolute; left: 50%; bottom: 4.5vh; transform: translateX(-50%); z-index: 2; opacity: 0; visibility: hidden; transition: opacity .3s, visibility .3s; }
+.voyage[data-port='on'] .part-hint { opacity: 1; visibility: visible; }
+.part-hint__btn { display: inline-flex; align-items: center; gap: 0.7rem; min-height: 44px; padding: 0.55rem 1rem; background: rgba(246, 243, 236, 0.78); border: 1px solid var(--line-strong); border-radius: 6px; color: var(--ink-soft); font: 500 0.66rem/1 var(--font-mono); letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; transition: border-color .2s, color .2s; }
+.part-hint__btn:hover { border-color: var(--accent); color: var(--accent); }
+.part-hint__btn svg { width: 15px; height: 15px; fill: none; stroke: var(--accent); stroke-width: 1.2; }
+@media (max-width: 860px) { .part-hint { bottom: auto; top: calc(var(--header-h) + 12px); } .part-tip { max-width: 220px; } }
+
+/* ---- Mediterranean (light) adjustments over the blue sea ---- */
+.voyage__canvas { background: var(--sky); }
+.island-tag__name { color: var(--navy); background: rgba(255, 255, 255, 0.9); border-color: rgba(11, 37, 69, 0.18); }
+.island-tag__coord { color: var(--white); text-shadow: 0 1px 2px rgba(11, 37, 69, 0.55); }
+.island-tag::after { background: linear-gradient(var(--white), transparent); }
+.part-reticle i { border-color: var(--white); filter: drop-shadow(0 0 2px rgba(11, 37, 69, 0.7)); }
+.part-tip { background: rgba(255, 255, 255, 0.96); border-color: rgba(11, 37, 69, 0.16); box-shadow: 0 18px 40px -20px rgba(11, 37, 69, 0.45); }
+.part-tip.is-pinned { border-color: var(--blue); }
+.part-tip.is-pinned .part-tip__head strong { color: var(--blue); }
+.part-hint__btn { background: rgba(255, 255, 255, 0.9); color: var(--navy); border-color: rgba(11, 37, 69, 0.16); }
+.part-hint__btn svg { stroke: var(--blue); }
+.voyage-rail { padding: 0.9rem 0.3rem; background: rgba(255, 255, 255, 0.86); border: 1px solid var(--line); border-radius: 999px; }
+.voyage-rail__diamond { border-color: var(--accent-soft); background: var(--white); }
+.voyage-rail a[aria-current='step'] .voyage-rail__diamond { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 3px rgba(42, 125, 225, 0.2); }
+.voyage[data-chapter='1'] .voyage-rail li:nth-child(-n + 1) .voyage-rail__diamond,
+.voyage[data-chapter='2'] .voyage-rail li:nth-child(-n + 2) .voyage-rail__diamond,
+.voyage[data-chapter='3'] .voyage-rail li:nth-child(-n + 3) .voyage-rail__diamond,
+.voyage[data-chapter='4'] .voyage-rail li:nth-child(-n + 4) .voyage-rail__diamond,
+.voyage[data-chapter='5'] .voyage-rail li:nth-child(-n + 5) .voyage-rail__diamond { background: #9dbbe0; border-color: var(--blue); }
+.voyage-rail__label [data-rail-label] { color: var(--blue); }
+.chapter__marker { background: var(--aegean); box-shadow: none; }
+.chapter__panel { box-shadow: 0 24px 60px -28px rgba(11, 37, 69, 0.45); }
+.chapter--hero .chapter__title { color: var(--navy); }
+.chapter--hero::before { inset: 0 45% 0 0; background: radial-gradient(ellipse at 30% 50%, rgba(246, 243, 236, 0.9) 0 26%, rgba(246, 243, 236, 0) 66%); }
+@media (max-width: 860px) { .chapter--hero::before { background: linear-gradient(180deg, rgba(246, 243, 236, 0) 0, rgba(246, 243, 236, 0.95) 42%); } }
+.chapter--editorial .chapter__point-n { color: var(--aegean); }
+.chapter--arrival .chapter__panel { border-color: var(--blue); }
+@media (max-width: 860px) {
+  .chapter--hero::before { inset: 25% 0 0 0; background: linear-gradient(180deg, rgba(246, 243, 236, 0) 0, rgba(246, 243, 236, 0.95) 40%); }
+  .part-hint__btn { white-space: nowrap; font-size: 0.58rem; letter-spacing: 0.12em; padding: 0.5rem 0.8rem; }
+}
+@media (max-width: 860px) {
+  /* more open water per chapter: the boat is framed in the upper half while the card rises from below */
+  .chapter--right { min-height: 150svh; }
+}
+/* still overview (reduced motion): the copy sits over open water, so the veil is stronger */
+@media (min-width: 861px) {
+  body:has(.voyage[data-reduced='true']) .chapter--hero::before { inset: 0 32% 0 0; background: radial-gradient(ellipse at 32% 52%, rgba(246, 243, 236, 0.96) 0 38%, rgba(246, 243, 236, 0) 74%); }
+}
